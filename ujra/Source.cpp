@@ -232,7 +232,7 @@ public:
 		Animate(0);
 	}
 
-	void Create(vec4 p1, vec4 p2, vec4 p3) {
+	Triangle& Create(vec4 p1, vec4 p2, vec4 p3) {
 		glGenVertexArrays(1, &vao);	// create 1 vertex array object
 		glBindVertexArray(vao);		// make it active
 
@@ -266,6 +266,7 @@ public:
 		glEnableVertexAttribArray(1);  // Vertex position
 									   // Data organization of Attribute Array 1
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL); // Attribute Array 1, components/attribute, component type, normalize?, tightly packed
+		return *this;
 	}
 
 	void Animate(float t) {
@@ -294,7 +295,7 @@ public:
 		else printf("uniform MVP cannot be set\n");
 
 		glBindVertexArray(vao);	// make the vao and its vbos active playing the role of the data source
-		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw a single triangle with vertices defined in vao
+		glDrawArrays(GL_LINE_LOOP, 0, 3);	// draw a single triangle with vertices defined in vao
 	}
 };
 
@@ -351,8 +352,11 @@ public:
 	}
 };
 
+
+
 class BezierSurface {
 	vector<vector<float>> BezCps;
+	vector<Triangle> Triangles;
 	int meret = 5;
 public:
 	void createCps() {
@@ -364,19 +368,40 @@ public:
 			}
 		}
 
-		/*for (int i = 0; i < meret; i++) {
-			for (int j = 0; j < meret; j++) {
-				printf("%f ", BezCps[i][j]);
+		for (int i = 0; i < meret - 1; i++) {
+			for (int j = 0; j < meret - 1; j++) {
+				float p = (i - 2.0f) * 5;
+				float q = (j - 2.0f) * 5;
+
+				Triangles.push_back(Triangle().Create(
+					vec4(p, q, BezCps[i][j]),
+					vec4(p, q + 5, BezCps[i][j+1]),
+					vec4(p + 5, q, BezCps[i+1][j])
+				));
+				Triangles.push_back(Triangle().Create(
+					vec4(p, q + 5, BezCps[i][j + 1]),
+					vec4(p + 5, q + 5, BezCps[i + 1][j + 1]),
+					vec4(p + 5, q, BezCps[i + 1][j])
+				));
 			}
-			printf("\n");
-		}*/
+		}
+
+		for (int i = 0; i < Triangles.size(); i++) {
+				//printf("x:%f y:%f z:%f\n", Triangles[i]);
+			}
+	}
+
+	void Draw() {
+		for (int i = 0; i < Triangles.size(); i++)	{
+			Triangles[i].Draw();
+		}
 	}
 };
 
 BezierSurface bezier;
 
 // The virtual world: collection of two objects
-Triangle triangle;
+//Triangle triangle;
 LineStrip lineStrip;
 
 // Initialization, create an OpenGL context
@@ -384,9 +409,9 @@ void onInitialization() {
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	// Create objects by setting up their vertex data on the GPU
-	bezier.createCps();
+	//bezier.createCps();
 	lineStrip.Create();
-	triangle.Create(vec4(-10,10,0), vec4(0,10,0), vec4(-10,0,0));
+	//triangle.Create(vec4(-10,10,0), vec4(0,10,0), vec4(-10,0,0));
 
 	// Create vertex shader from string
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -425,6 +450,8 @@ void onInitialization() {
 	checkLinking(shaderProgram);
 	// make this program run
 	glUseProgram(shaderProgram);
+
+	bezier.createCps();
 }
 
 void onExit() {
@@ -437,8 +464,8 @@ void onDisplay() {
 	glClearColor(0, 0, 0, 0);							// background color 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the screen
 
-	triangle.Draw();
-	
+	//triangle.Draw();
+	bezier.Draw();
 	lineStrip.Draw();
 	glutSwapBuffers();									// exchange the two buffers
 }
@@ -472,7 +499,7 @@ void onIdle() {
 	long time = glutGet(GLUT_ELAPSED_TIME); // elapsed time since the start of the program
 	float sec = time / 1000.0f;				// convert msec to sec
 	camera.Animate(sec);					// animate the camera
-	triangle.Animate(sec);					// animate the triangle object
+	//triangle.Animate(sec);					// animate the triangle object
 	
 	glutPostRedisplay();					// redraw the scene
 }
