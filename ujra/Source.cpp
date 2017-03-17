@@ -356,8 +356,35 @@ public:
 
 class BezierSurface {
 	vector<vector<float>> BezCps;
+	vector<vector<vec4>> bezIntps;
 	vector<Triangle> Triangles;
 	int meret = 5;
+
+	int bernstein(int n, int i) {
+		return fact(n) / (fact(i)*fact(n - i));
+	}
+
+	int fact(int n) {
+		if (n == 0) return 1;
+		else return n*fact(n - 1);
+	}
+
+	float B(float u, int n, int i) {
+		float ret = (float)bernstein(n - 1, i)*pow(u, i)*pow((1 - u), (n - 1 - i));
+		printf("%f\n", ret);
+		return ret;
+	}
+
+	float p(float u, float v) {
+		float ret = 0;
+		for (int i = 0; i < meret; i++) {
+			for (int j = 0; j < meret; j++) {
+				ret = ret + B(u, meret, i)*B(v, meret, j)*BezCps[i][j];
+			}
+		}
+		return ret;
+	}
+
 public:
 	void createCps() {
 		
@@ -385,10 +412,40 @@ public:
 				));
 			}
 		}
+	}
 
-		for (int i = 0; i < Triangles.size(); i++) {
-				//printf("x:%f y:%f z:%f\n", Triangles[i]);
+	void createBezIntps() {
+		float scale = 1.0 / 20;
+		for (float i = 0; i < 21; i ++) {
+			bezIntps.push_back(vector<vec4>());
+			for (float j = 0; j < 21; j ++) {
+				float u = i*scale;
+				float v = j*scale;
+				bezIntps[i].push_back(vec4(i - 10, j - 10, p(u,v)));
 			}
+		}
+
+		for (int i = 0; i < 20; i++) {
+			for (int j = 0; j < 20; j++) {
+
+				Triangles.push_back(Triangle().Create(
+					bezIntps[i][j],
+					bezIntps[i][j+1],
+					bezIntps[i+1][j]
+				));
+				Triangles.push_back(Triangle().Create(
+					bezIntps[i][j+1],
+					bezIntps[i+1][j+1],
+					bezIntps[i+1][j]
+				));
+			}
+		}
+
+	}
+
+	void Create() {
+		createCps();
+		createBezIntps();
 	}
 
 	void Draw() {
@@ -451,7 +508,7 @@ void onInitialization() {
 	// make this program run
 	glUseProgram(shaderProgram);
 
-	bezier.createCps();
+	bezier.Create();
 }
 
 void onExit() {
