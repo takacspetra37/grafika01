@@ -360,7 +360,7 @@ void onInitialization() {
 	// Create objects by setting up their vertex data on the GPU
 	lineStrip.Create();
 	triangle.Create(vec4(-10,10,0), vec4(0,10,0), vec4(-10,0,0));
-	triangle2.Create(vec4(10, 10,0.5), vec4(10, -10,1), vec4(-10, -10,0));
+	triangle2.Create(vec4(10, 10,0), vec4(10, -10,1), vec4(-10, -10,0));
 
 	// Create vertex shader from string
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
