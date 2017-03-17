@@ -57,6 +57,8 @@ const unsigned int windowWidth = 600, windowHeight = 600;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // You are supposed to modify the code from here...
 
+using namespace std;
+
 // OpenGL major and minor versions
 int majorVersion = 3, minorVersion = 3;
 
@@ -150,7 +152,6 @@ public:
 	operator float*() { return &m[0][0]; }
 };
 
-
 // 3D point in homogeneous coordinates
 struct vec4 {
 	float v[4];
@@ -213,6 +214,8 @@ public:
 		wWy = 20;
 	}
 };
+
+
 
 // 2D camera
 Camera camera;
@@ -348,9 +351,32 @@ public:
 	}
 };
 
+class BezierSurface {
+	vector<vector<float>> BezCps;
+	int meret = 5;
+public:
+	void createCps() {
+		
+		for (int i = 0; i < meret; i++) {
+			BezCps.push_back(vector<float>());
+			for (int j = 0; j < meret; j++) {
+				BezCps[i].push_back((rand() % 1000)/1000.0);
+			}
+		}
+
+		/*for (int i = 0; i < meret; i++) {
+			for (int j = 0; j < meret; j++) {
+				printf("%f ", BezCps[i][j]);
+			}
+			printf("\n");
+		}*/
+	}
+};
+
+BezierSurface bezier;
+
 // The virtual world: collection of two objects
 Triangle triangle;
-Triangle triangle2;
 LineStrip lineStrip;
 
 // Initialization, create an OpenGL context
@@ -358,9 +384,9 @@ void onInitialization() {
 	glViewport(0, 0, windowWidth, windowHeight);
 
 	// Create objects by setting up their vertex data on the GPU
+	bezier.createCps();
 	lineStrip.Create();
 	triangle.Create(vec4(-10,10,0), vec4(0,10,0), vec4(-10,0,0));
-	triangle2.Create(vec4(10, 10,1), vec4(10, -10,1), vec4(-10, -10,0));
 
 	// Create vertex shader from string
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -412,7 +438,7 @@ void onDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the screen
 
 	triangle.Draw();
-	triangle2.Draw();
+	
 	lineStrip.Draw();
 	glutSwapBuffers();									// exchange the two buffers
 }
@@ -447,7 +473,7 @@ void onIdle() {
 	float sec = time / 1000.0f;				// convert msec to sec
 	camera.Animate(sec);					// animate the camera
 	triangle.Animate(sec);					// animate the triangle object
-	triangle2.Animate(sec);					// animate the triangle object
+	
 	glutPostRedisplay();					// redraw the scene
 }
 
