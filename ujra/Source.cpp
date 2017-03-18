@@ -295,7 +295,7 @@ public:
 		else printf("uniform MVP cannot be set\n");
 
 		glBindVertexArray(vao);	// make the vao and its vbos active playing the role of the data source
-		glDrawArrays(GL_LINE_LOOP, 0, 3);	// draw a single triangle with vertices defined in vao
+		glDrawArrays(GL_TRIANGLES, 0, 3);	// draw a single triangle with vertices defined in vao
 	}
 };
 
@@ -371,7 +371,6 @@ class BezierSurface {
 
 	float B(float u, int n, int i) {
 		float ret = (float)bernstein(n - 1, i)*pow(u, i)*pow((1 - u), (n - 1 - i));
-		printf("%f\n", ret);
 		return ret;
 	}
 
